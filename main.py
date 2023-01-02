@@ -56,7 +56,7 @@ def game_button(screen):
 
 def draw(screen):
     screen.fill(pygame.Color('black'))
-    for i in range(400):
+    for i in range(350):
         screen.fill(pygame.Color('white'),
                     (random.random() * width,
                      random.random() * height, 1, 1))
