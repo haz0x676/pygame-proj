@@ -113,7 +113,6 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode(size)
     input_box = InputBox((width // 2 - 70) - 22, 160, 140, 32)
     flag_level = False
-    flag_first_screen = False
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -125,14 +124,10 @@ if __name__ == '__main__':
                     x_pos, y_pos = event.pos
                     if x_pos in range(306, 501) and y_pos in range(238, 284):
                         flag_level = True
-                        flag_first_screen = False
             if flag_level:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x_pos, y_pos = event.pos
                     print(x_pos, y_pos)
-                    if x_pos in range(309, 516) and y_pos in range(442, 480):
-                        flag_first_screen = True
-                        flag_level = False
 
         draw(screen)
         if not flag_level:
@@ -148,14 +143,6 @@ if __name__ == '__main__':
             draw_level_buttons(screen, "Level 3", 300)
             draw_level_buttons(screen, "Level 4", 350)
             draw_level_buttons(screen, "Level 5", 400)
-            draw_level_buttons(screen, "Вернутся назад", 450)
 
-        if flag_first_screen:
-            input_box.update()
-            input_box.draw(screen)
-            main_text(screen)
-            level_button(screen)
-            nickname_button(screen)
-            game_button(screen)
         clock.tick(FPS)
         pygame.display.flip()
