@@ -10,7 +10,6 @@ COLOR_INACTIVE = pygame.Color('lightskyblue3')
 COLOR_ACTIVE = pygame.Color('dodgerblue2')
 
 
-
 def main_text(screen):
     font = pygame.font.Font(None, 40)
     text = font.render("Добро пожаловать в Space Шутер!", True, (65, 105, 225))
@@ -67,18 +66,18 @@ def terminate():
     sys.exit()
 
 
+def draw_level_buttons(screen, info, y):
+    font = pygame.font.Font(None, 35)
+    text = font.render(info, True, (30, 144, 255))
+    text_x = width // 2 - 82
+    text_y = y
+    text_w = text.get_width()
+    text_h = text.get_height()
+    screen.blit(text, (text_x, text_y))
+    pygame.draw.rect(screen, (0, 255, 255), (text_x - 10, text_y - 10,
+                                             text_w + 20, text_h + 20), 1)
 
 
-def change_level(screen, info, y):
-        font = pygame.font.Font(None, 35)
-        text = font.render(info, True, (30, 144, 255))
-        text_x = width // 2 - 82
-        text_y = y
-        text_w = text.get_width()
-        text_h = text.get_height()
-        screen.blit(text, (text_x, text_y))
-        pygame.draw.rect(screen, (0, 255, 255), (text_x - 10, text_y - 10,
-                                                text_w + 20, text_h + 20), 1)
 class InputBox:
     def __init__(self, x, y, w, h, text=''):
         self.rect = pygame.Rect(x, y, w, h)
@@ -105,7 +104,6 @@ class InputBox:
     def draw(self, screen):
         screen.blit(self.txt_surface, (self.rect.x + 5, self.rect.y + 5))
         pygame.draw.rect(screen, self.color, self.rect, 2)
-    
 
 
 if __name__ == '__main__':
@@ -115,7 +113,7 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode(size)
     input_box = InputBox((width // 2 - 70) - 22, 160, 140, 32)
     flag_level = False
-    
+    flag_first_screen = False
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -127,13 +125,16 @@ if __name__ == '__main__':
                     x_pos, y_pos = event.pos
                     if x_pos in range(306, 501) and y_pos in range(238, 284):
                         flag_level = True
+                        flag_first_screen = False
             if flag_level:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x_pos, y_pos = event.pos
                     print(x_pos, y_pos)
+                    if x_pos in range(309, 516) and y_pos in range(442, 480):
+                        flag_first_screen = True
+                        flag_level = False
 
-
-        draw(screen)       
+        draw(screen)
         if not flag_level:
             input_box.update()
             input_box.draw(screen)
@@ -142,10 +143,19 @@ if __name__ == '__main__':
             nickname_button(screen)
             game_button(screen)
         if flag_level:
-            change_level(screen, "Level 1", 200)
-            change_level(screen, "Level 2", 250)
-            change_level(screen, "Level 3", 300)
-            change_level(screen, "Level 4", 350)
-            change_level(screen, "Level 5", 400)
+            draw_level_buttons(screen, "Level 1", 200)
+            draw_level_buttons(screen, "Level 2", 250)
+            draw_level_buttons(screen, "Level 3", 300)
+            draw_level_buttons(screen, "Level 4", 350)
+            draw_level_buttons(screen, "Level 5", 400)
+            draw_level_buttons(screen, "Вернутся назад", 450)
+
+        if flag_first_screen:
+            input_box.update()
+            input_box.draw(screen)
+            main_text(screen)
+            level_button(screen)
+            nickname_button(screen)
+            game_button(screen)
         clock.tick(FPS)
         pygame.display.flip()
