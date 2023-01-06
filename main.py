@@ -55,7 +55,7 @@ def game_button(screen):
 
 def draw(screen):
     screen.fill(pygame.Color('black'))
-    for i in range(350):
+    for i in range(400):
         screen.fill(pygame.Color('white'),
                     (random.random() * width,
                      random.random() * height, 1, 1))
@@ -66,7 +66,7 @@ def terminate():
     sys.exit()
 
 
-def draw_level_buttons(screen, info, y):
+def change_level(screen, info, y):
     font = pygame.font.Font(None, 35)
     text = font.render(info, True, (30, 144, 255))
     text_x = width // 2 - 82
@@ -113,6 +113,8 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode(size)
     input_box = InputBox((width // 2 - 70) - 22, 160, 140, 32)
     flag_level = False
+    level = 0
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -127,7 +129,21 @@ if __name__ == '__main__':
             if flag_level:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x_pos, y_pos = event.pos
-                    print(x_pos, y_pos)
+                    if x_pos in range(309, 409) and y_pos in range(190, 232):
+                        level = 1
+                        flag_level = False
+                    elif x_pos in range(309, 409) and y_pos in range(270, 310):
+                        level = 2
+                        flag_level = False
+                    elif x_pos in range(309, 409) and y_pos in range(350, 390):
+                        level = 3
+                        flag_level = False
+                    elif x_pos in range(309, 409) and y_pos in range(430, 470):
+                        level = 4
+                        flag_level = False
+                    elif x_pos in range(309, 409) and y_pos in range(510, 550):
+                        level = 5
+                        flag_level = False
 
         draw(screen)
         if not flag_level:
@@ -138,11 +154,10 @@ if __name__ == '__main__':
             nickname_button(screen)
             game_button(screen)
         if flag_level:
-            draw_level_buttons(screen, "Level 1", 200)
-            draw_level_buttons(screen, "Level 2", 250)
-            draw_level_buttons(screen, "Level 3", 300)
-            draw_level_buttons(screen, "Level 4", 350)
-            draw_level_buttons(screen, "Level 5", 400)
-
+            change_level(screen, "Level 1", 200)
+            change_level(screen, "Level 2", 280)
+            change_level(screen, "Level 3", 360)
+            change_level(screen, "Level 4", 440)
+            change_level(screen, "Level 5", 520)
         clock.tick(FPS)
         pygame.display.flip()
