@@ -124,8 +124,10 @@ if __name__ == '__main__':
                     input_box.handle_event(event)
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x_pos, y_pos = event.pos
-                    if x_pos in range(306, 501) and y_pos in range(238, 284):
+                    print(x_pos, y_pos)
+                    if x_pos in range(311, 498) and y_pos in range(241, 279):
                         flag_level = True
+
             if flag_level:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x_pos, y_pos = event.pos
@@ -161,4 +163,3 @@ if __name__ == '__main__':
             change_level(screen, "Level 5", 520)
         clock.tick(FPS)
         pygame.display.flip()
-#MERCEDEZ BENZ
