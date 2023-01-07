@@ -4,7 +4,7 @@ import random
 import sys
 
 v = 10
-FPS = 10
+FPS = 60
 clock = pygame.time.Clock()
 COLOR_INACTIVE = pygame.Color('lightskyblue3')
 COLOR_ACTIVE = pygame.Color('dodgerblue2')
@@ -83,7 +83,8 @@ class InputBox:
         self.rect = pygame.Rect(x, y, w, h)
         self.color = COLOR_INACTIVE
         self.text = text
-        self.txt_surface = pygame.font.Font(None, 32).render(text, True, self.color)
+        self.txt_surface = pygame.font.Font(
+            None, 32).render(text, True, self.color)
 
     def handle_event(self, event):
         if event.type == pygame.KEYDOWN:
@@ -95,7 +96,8 @@ class InputBox:
                 self.text = self.text[:-1]
             else:
                 self.text += event.unicode
-            self.txt_surface = pygame.font.Font(None, 32).render(self.text, True, self.color)
+            self.txt_surface = pygame.font.Font(
+                None, 32).render(self.text, True, self.color)
 
     def update(self):
         width = max(200, self.txt_surface.get_width() + 10)
@@ -104,6 +106,38 @@ class InputBox:
     def draw(self, screen):
         screen.blit(self.txt_surface, (self.rect.x + 5, self.rect.y + 5))
         pygame.draw.rect(screen, self.color, self.rect, 2)
+
+
+class Player(pygame.sprite.Sprite):
+
+    def __init__(self, *group):
+        super().__init__(*group)
+        self.image = pygame.image.load("data/spaceship.png")
+        self.rect = self.image.get_rect()
+        self.rect.x = random.randrange(450)
+        self.rect.y = random.randrange(500)
+        self.keyleft = False
+        self.keyright = False
+
+    def update(self, event=None):
+        if event:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_a:
+                    self.keyleft = True
+                elif event.key == pygame.K_d:
+                    self.keyright = True
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_a:
+                    self.keyleft = False
+                elif event.key == pygame.K_d:
+                    self.keyright = False
+        if self.keyleft:
+            if self.rect.x > 0:
+                self.rect = self.rect.move(-3, 0)
+        if self.keyright:
+            if self.rect.x < 700:
+                print(self.rect.x)
+                self.rect = self.rect.move(3, 0)
 
 
 if __name__ == '__main__':
@@ -115,7 +149,8 @@ if __name__ == '__main__':
     flag_level = False
     level = 0
 
-    while True:
+    menu_flag = True
+    while menu_flag:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
@@ -124,10 +159,12 @@ if __name__ == '__main__':
                     input_box.handle_event(event)
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x_pos, y_pos = event.pos
-                    print(x_pos, y_pos)
-                    if x_pos in range(311, 498) and y_pos in range(241, 279):
+                    if x_pos in range(306, 501) and y_pos in range(238, 284):
                         flag_level = True
-
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x_pos, y_pos = event.pos
+                    if x_pos in range(325, 486) and y_pos in range(339, 382):
+                        menu_flag = False
             if flag_level:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x_pos, y_pos = event.pos
@@ -163,3 +200,22 @@ if __name__ == '__main__':
             change_level(screen, "Level 5", 520)
         clock.tick(FPS)
         pygame.display.flip()
+
+    all_sprites = pygame.sprite.Group()
+    player = Player(all_sprites)
+    run = True
+    while run:
+        screen.fill("black")
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+            elif event.type == pygame.KEYDOWN:
+                player.update(event)
+            elif event.type == pygame.KEYUP:
+                player.update(event)
+        all_sprites.draw(screen)
+        player.update()
+        clock.tick(FPS)
+        pygame.display.flip()
+
+    pygame.quit()
