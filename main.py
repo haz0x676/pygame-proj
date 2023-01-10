@@ -240,6 +240,7 @@ if __name__ == '__main__':
     run = True
     while run:
         screen.fill("black")
+        draw(screen)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
