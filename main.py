@@ -5,9 +5,14 @@ import sys
 
 v = 10
 FPS = 60
+lost = 0
+score = 0
 clock = pygame.time.Clock()
 COLOR_INACTIVE = pygame.Color('lightskyblue3')
 COLOR_ACTIVE = pygame.Color('dodgerblue2')
+img_hero = "data/spaceship.png"
+img_bullet = "data/bullet.png"
+img_enemy = "data/asteroid.png"
 
 
 def main_text(screen):
@@ -108,43 +113,72 @@ class InputBox:
         pygame.draw.rect(screen, self.color, self.rect, 2)
 
 
-class Player(pygame.sprite.Sprite):
+class GameSprite(pygame.sprite.Sprite):
+    # конструктор класса
+    def __init__(self, player_image, player_x, player_y, size_x, size_y, player_speed):
+        # Вызываем конструктор класса (Sprite):
+        pygame.sprite.Sprite.__init__(self)
 
-    def __init__(self, *group):
-        super().__init__(*group)
-        self.image = pygame.image.load("data/spaceship.png")
+        # каждый спрайт должен хранить свойство image - изображение
+        self.image = pygame.transform.scale(pygame.image.load(player_image), (size_x, size_y))
+        self.speed = player_speed
+
+        # каждый спрайт должен хранить свойство rect - прямоугольник, в который он вписан
         self.rect = self.image.get_rect()
-        self.rect.x = 355
-        self.rect.y = 500
-        self.keyleft = False
-        self.keyright = False
+        self.rect.x = player_x
+        self.rect.y = player_y
 
-    def update(self, event=None):
-        if event:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_a:
-                    self.keyleft = True
-                elif event.key == pygame.K_d:
-                    self.keyright = True
-            elif event.type == pygame.KEYUP:
-                if event.key == pygame.K_a:
-                    self.keyleft = False
-                elif event.key == pygame.K_d:
-                    self.keyright = False
-        if self.keyleft:
-            if self.rect.x > 0:
-                self.rect = self.rect.move(-3, 0)
-        if self.keyright:
-            if self.rect.x < 700:
-                print(self.rect.x)
-                self.rect = self.rect.move(3, 0)
+    # метод, отрисовывающий героя на окне
+    def reset(self):
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+
+
+class Player(GameSprite):
+    def update(self):
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_a] and self.rect.x > 0:
+            self.rect.x -= self.speed
+
+        if keys[pygame.K_d] and self.rect.x < 700:
+            self.rect.x += self.speed
+
+    # метод "выстрел" (используем место игрока, чтобы создать там пулю)
+    def fire(self):
+        bullet = Bullet(img_bullet, self.rect.centerx, self.rect.top, 15, 20, -10)
+        bullets.add(bullet)
+
+
+class Bullet(GameSprite):
+    # движение врага
+    def update(self):
+        self.rect.y += self.speed
+        # исчезает, если дойдет до края экрана
+        if self.rect.y < 0:
+            self.kill()
+
+
+class Enemy(GameSprite):
+    # движение врага
+    def update(self):
+        self.rect.y += self.speed
+        global lost
+        # исчезает, если дойдет до края экрана
+        if self.rect.y > height:
+            self.rect.x = random.randint(80, width - 80)
+            self.rect.y = 0
+            lost = lost + 1
 
 
 if __name__ == '__main__':
     pygame.display.set_caption("Игра Space Шутер")
     pygame.init()
+    bullets = pygame.sprite.Group()
     size = width, height = 800, 700
     screen = pygame.display.set_mode(size)
+    monsters = pygame.sprite.Group()
+    for i in range(1, 6):
+        monster = Enemy(img_enemy, random.randint(80, width - 80), -40, 80, 50, random.randint(1, 5))
+        monsters.add(monster)
     input_box = InputBox((width // 2 - 70) - 22, 160, 140, 32)
     flag_level = False
     level = 0
@@ -202,7 +236,7 @@ if __name__ == '__main__':
         pygame.display.flip()
 
     all_sprites = pygame.sprite.Group()
-    player = Player(all_sprites)
+    ship = Player(img_hero, 300, 550, 200, 200, 5)
     run = True
     while run:
         screen.fill("black")
@@ -210,11 +244,21 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.KEYDOWN:
-                player.update(event)
-            elif event.type == pygame.KEYUP:
-                player.update(event)
-        all_sprites.draw(screen)
-        player.update()
+                if event.key == pygame.K_SPACE:
+                    ship.fire()
+
+        bullets.draw(screen)
+        bullets.update()
+        monsters.draw(screen)
+        monsters.update()
+        collides = pygame.sprite.groupcollide(monsters, bullets, True, True)
+        for c in collides:
+            # этот цикл повторится столько раз, сколько монстров подбито
+            score = score + 1
+            monster = Enemy(img_enemy, random.randint(80, width - 80), -40, 80, 50, random.randint(1, 5))
+            monsters.add(monster)
+        ship.reset()
+        ship.update()
         clock.tick(FPS)
         pygame.display.flip()
 
