@@ -114,8 +114,8 @@ class Player(pygame.sprite.Sprite):
         super().__init__(*group)
         self.image = pygame.image.load("data/spaceship.png")
         self.rect = self.image.get_rect()
-        self.rect.x = random.randrange(450)
-        self.rect.y = random.randrange(500)
+        self.rect.x = 355
+        self.rect.y = 500
         self.keyleft = False
         self.keyright = False
 
