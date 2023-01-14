@@ -3,10 +3,15 @@ import random
 
 import sys
 
-v = 10
-FPS = 60
+pygame.font.init()
+font1 = pygame.font.SysFont('Arial', 80)
+v = 13
+finish = False
+FPS = 45
 lost = 0
-score = 0
+font2 = pygame.font.SysFont('Arial', 36)
+lose = font1.render('ВЫ ПРОИГРАЛИ!', True, (180, 0, 0))
+win = font1.render('YOU WIN!', True, (255, 255, 255))
 clock = pygame.time.Clock()
 COLOR_INACTIVE = pygame.Color('lightskyblue3')
 COLOR_ACTIVE = pygame.Color('dodgerblue2')
@@ -60,7 +65,7 @@ def game_button(screen):
 
 def draw(screen):
     screen.fill(pygame.Color('black'))
-    for i in range(400):
+    for i in range(200):
         screen.fill(pygame.Color('white'),
                     (random.random() * width,
                      random.random() * height, 1, 1))
@@ -71,10 +76,10 @@ def terminate():
     sys.exit()
 
 
-def change_level(screen, info, y):
+def create_button(screen, info, x, y):
     font = pygame.font.Font(None, 35)
     text = font.render(info, True, (30, 144, 255))
-    text_x = width // 2 - 82
+    text_x = x
     text_y = y
     text_w = text.get_width()
     text_h = text.get_height()
@@ -115,10 +120,10 @@ class InputBox:
 
 class GameSprite(pygame.sprite.Sprite):
     # конструктор класса
-    def __init__(self, player_image, player_x, player_y, size_x, size_y, player_speed):
+    def __init__(self, player_image, player_x, player_y, size_x, size_y, player_speed, hp=1):
         # Вызываем конструктор класса (Sprite):
         pygame.sprite.Sprite.__init__(self)
-
+        self.hp = hp
         # каждый спрайт должен хранить свойство image - изображение
         self.image = pygame.transform.scale(pygame.image.load(player_image), (size_x, size_y))
         self.speed = player_speed
@@ -139,7 +144,7 @@ class Player(GameSprite):
         if keys[pygame.K_a] and self.rect.x > 0:
             self.rect.x -= self.speed
 
-        if keys[pygame.K_d] and self.rect.x < 700:
+        if keys[pygame.K_d] and self.rect.x < 620:
             self.rect.x += self.speed
 
     # метод "выстрел" (используем место игрока, чтобы создать там пулю)
@@ -166,101 +171,177 @@ class Enemy(GameSprite):
         if self.rect.y > height:
             self.rect.x = random.randint(80, width - 80)
             self.rect.y = 0
-            lost = lost + 1
+            lost += 1
 
 
 if __name__ == '__main__':
     pygame.display.set_caption("Игра Space Шутер")
     pygame.init()
-    bullets = pygame.sprite.Group()
     size = width, height = 800, 700
     screen = pygame.display.set_mode(size)
     monsters = pygame.sprite.Group()
-    for i in range(1, 6):
-        monster = Enemy(img_enemy, random.randint(80, width - 80), -40, 80, 50, random.randint(1, 5))
-        monsters.add(monster)
     input_box = InputBox((width // 2 - 70) - 22, 160, 140, 32)
     flag_level = False
-    level = 0
-
-    menu_flag = True
-    while menu_flag:
+    level = 1
+    game = True
+    while game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 terminate()
+        menu_flag = True
+        while menu_flag:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
+                if not flag_level:
+                    if event.type == pygame.KEYDOWN:
+                        input_box.handle_event(event)
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        x_pos, y_pos = event.pos
+                        if x_pos in range(310, 499) and y_pos in range(241, 278):
+                            flag_level = True
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        x_pos, y_pos = event.pos
+                        if x_pos in range(325, 486) and y_pos in range(339, 382):
+                            menu_flag = False
+                if flag_level:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        x_pos, y_pos = event.pos
+                        if x_pos in range(309, 409) and y_pos in range(190, 232):
+                            level = 1
+                            flag_level = False
+                        elif x_pos in range(309, 409) and y_pos in range(270, 310):
+                            level = 2
+                            flag_level = False
+                        elif x_pos in range(309, 409) and y_pos in range(350, 390):
+                            level = 3
+                            flag_level = False
+                        elif x_pos in range(309, 409) and y_pos in range(430, 470):
+                            level = 4
+                            flag_level = False
+                        elif x_pos in range(309, 409) and y_pos in range(510, 550):
+                            level = 5
+                            flag_level = False
+
+            draw(screen)
             if not flag_level:
-                if event.type == pygame.KEYDOWN:
-                    input_box.handle_event(event)
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    x_pos, y_pos = event.pos
-                    if x_pos in range(306, 501) and y_pos in range(238, 284):
-                        flag_level = True
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    x_pos, y_pos = event.pos
-                    if x_pos in range(325, 486) and y_pos in range(339, 382):
-                        menu_flag = False
+                input_box.update()
+                input_box.draw(screen)
+                main_text(screen)
+                level_button(screen)
+                nickname_button(screen)
+                game_button(screen)
             if flag_level:
+                create_button(screen, "Level 1", width // 2 - 82, 200)
+                create_button(screen, "Level 2", width // 2 - 82, 280)
+                create_button(screen, "Level 3", width // 2 - 82, 360)
+                create_button(screen, "Level 4", width // 2 - 82, 440)
+                create_button(screen, "Level 5", width // 2 - 82, 520)
+            clock.tick(FPS)
+            pygame.display.flip()
+
+        all_sprites = pygame.sprite.Group()
+        bullets = pygame.sprite.Group()
+        ship = Player(img_hero, 300, 550, 200, 200, 5)
+        run = True
+        min_speed = 0
+        max_speed = 1
+        limit = 0
+        bullets_cnt = 0
+        score = 0
+        hp = 1
+        if level == 1:
+            min_speed = 1
+            max_speed = 2
+            limit = 2
+            bullets_cnt = 10
+        if level == 2:
+            min_speed = 3
+            max_speed = 4
+            limit = 3
+            bullets_cnt = 12
+        if level == 3:
+            min_speed = 4
+            max_speed = 5
+            limit = 3
+            bullets_cnt = 12
+        if level == 4:
+            min_speed = 1
+            max_speed = 3
+            hp = 2
+            limit = 3
+            bullets_cnt = 15
+        if level == 5:
+            min_speed = 3
+            max_speed = 4
+            hp = 2
+            limit = 3
+            bullets_cnt = 17
+        for i in range(1, 3):
+            monster = Enemy(img_enemy, random.randint(80, width - 80), -40, 80, 50,
+                            random.randint(min_speed, max_speed), hp)
+            monsters.add(monster)
+        while run:
+            screen.fill("black")
+            draw(screen)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        if bullets_cnt > 0:
+                            ship.fire()
+                            bullets_cnt -= 1
+
+            if not finish:
+                text = font2.render("Счет: " + str(score), True, (255, 255, 255))
+                screen.blit(text, (10, 20))
+
+                text_lose = font2.render("Пропущено: " + str(lost), True, (255, 255, 255))
+                screen.blit(text_lose, (10, 50))
+
+                text_bullets = font2.render("Количество пуль: " + str(bullets_cnt), True, (255, 255, 255))
+                screen.blit(text_bullets, (10, 80))
+
+                bullets.draw(screen)
+                bullets.update()
+                monsters.draw(screen)
+                monsters.update()
+                collides = pygame.sprite.groupcollide(monsters, bullets, False, True)
+                # этот цикл повторится столько раз, сколько монстров подбито
+                for c in collides:
+                    c.hp -= 1
+                    if c.hp == 0:
+                        c.kill()
+                        score += 1
+                        monster = Enemy(img_enemy, random.randint(80, width - 80), -40, 80, 50, random.randint(1, 5),
+                                        hp)
+                        monsters.add(monster)
+                if pygame.sprite.spritecollide(ship, monsters, False) or lost >= limit:
+                    run = False
+
+                ship.reset()
+                ship.update()
+                clock.tick(FPS)
+                pygame.display.flip()
+        finish = True
+        screen.blit(lose, (100, 200))
+        while finish:
+            draw(screen)
+            screen.blit(lose, (80, 200))
+            create_button(screen, 'Выйти в главное меню', 80, 550)
+            create_button(screen, "Попробовать заново", 450, 550)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     x_pos, y_pos = event.pos
-                    if x_pos in range(309, 409) and y_pos in range(190, 232):
-                        level = 1
-                        flag_level = False
-                    elif x_pos in range(309, 409) and y_pos in range(270, 310):
-                        level = 2
-                        flag_level = False
-                    elif x_pos in range(309, 409) and y_pos in range(350, 390):
-                        level = 3
-                        flag_level = False
-                    elif x_pos in range(309, 409) and y_pos in range(430, 470):
-                        level = 4
-                        flag_level = False
-                    elif x_pos in range(309, 409) and y_pos in range(510, 550):
-                        level = 5
-                        flag_level = False
+                    if x_pos in range(71, 360) and y_pos in range(540, 579):
+                        print("В разработке")
 
-        draw(screen)
-        if not flag_level:
-            input_box.update()
-            input_box.draw(screen)
-            main_text(screen)
-            level_button(screen)
-            nickname_button(screen)
-            game_button(screen)
-        if flag_level:
-            change_level(screen, "Level 1", 200)
-            change_level(screen, "Level 2", 280)
-            change_level(screen, "Level 3", 360)
-            change_level(screen, "Level 4", 440)
-            change_level(screen, "Level 5", 520)
-        clock.tick(FPS)
-        pygame.display.flip()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    x_pos, y_pos = event.pos
+                    if x_pos in range(442, 709) and y_pos in range(542, 581):
+                        print("В разработке")
 
-    all_sprites = pygame.sprite.Group()
-    ship = Player(img_hero, 300, 550, 200, 200, 5)
-    run = True
-    while run:
-        screen.fill("black")
-        draw(screen)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                terminate()
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    ship.fire()
-
-        bullets.draw(screen)
-        bullets.update()
-        monsters.draw(screen)
-        monsters.update()
-        collides = pygame.sprite.groupcollide(monsters, bullets, True, True)
-        for c in collides:
-            # этот цикл повторится столько раз, сколько монстров подбито
-            score = score + 1
-            monster = Enemy(img_enemy, random.randint(80, width - 80), -40, 80, 50, random.randint(1, 5))
-            monsters.add(monster)
-        ship.reset()
-        ship.update()
-        clock.tick(FPS)
-        pygame.display.flip()
-
-    pygame.quit()
+            pygame.display.flip()
