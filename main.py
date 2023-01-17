@@ -1,17 +1,19 @@
 import pygame
 import random
-
+import json
 import sys
 
 pygame.font.init()
 font1 = pygame.font.SysFont('Arial', 80)
 v = 13
-finish = False
+finish_lose = False
+finish_win = False
+
 FPS = 45
 lost = 0
 font2 = pygame.font.SysFont('Arial', 36)
 lose = font1.render('ВЫ ПРОИГРАЛИ!', True, (180, 0, 0))
-win = font1.render('YOU WIN!', True, (255, 255, 255))
+win = font1.render('ВЫ ВЫИГРАЛИ', True, (0, 255, 0))
 clock = pygame.time.Clock()
 COLOR_INACTIVE = pygame.Color('lightskyblue3')
 COLOR_ACTIVE = pygame.Color('dodgerblue2')
@@ -86,6 +88,12 @@ def create_button(screen, info, x, y):
     screen.blit(text, (text_x, text_y))
     pygame.draw.rect(screen, (0, 255, 255), (text_x - 10, text_y - 10,
                                              text_w + 20, text_h + 20), 1)
+
+
+def read_json(file_name):
+    with open(file_name) as input_file:
+        data = json.load(input_file)
+    return data
 
 
 class InputBox:
@@ -179,7 +187,6 @@ if __name__ == '__main__':
     pygame.init()
     size = width, height = 800, 700
     screen = pygame.display.set_mode(size)
-    monsters = pygame.sprite.Group()
     input_box = InputBox((width // 2 - 70) - 22, 160, 140, 32)
     flag_level = False
     level = 1
@@ -239,61 +246,34 @@ if __name__ == '__main__':
                 create_button(screen, "Level 5", width // 2 - 82, 520)
             clock.tick(FPS)
             pygame.display.flip()
+        game_running = True
+        while game_running:
+            all_sprites = pygame.sprite.Group()
+            bullets = pygame.sprite.Group()
+            monsters = pygame.sprite.Group()
+            ship = Player(img_hero, 300, 550, 200, 200, 5)
+            run = True
+            score = 0
 
-        all_sprites = pygame.sprite.Group()
-        bullets = pygame.sprite.Group()
-        ship = Player(img_hero, 300, 550, 200, 200, 5)
-        run = True
-        min_speed = 0
-        max_speed = 1
-        limit = 0
-        bullets_cnt = 0
-        score = 0
-        hp = 1
-        if level == 1:
-            min_speed = 1
-            max_speed = 2
-            limit = 2
-            bullets_cnt = 10
-        if level == 2:
-            min_speed = 3
-            max_speed = 4
-            limit = 3
-            bullets_cnt = 12
-        if level == 3:
-            min_speed = 4
-            max_speed = 5
-            limit = 3
-            bullets_cnt = 12
-        if level == 4:
-            min_speed = 1
-            max_speed = 3
-            hp = 2
-            limit = 3
-            bullets_cnt = 15
-        if level == 5:
-            min_speed = 3
-            max_speed = 4
-            hp = 2
-            limit = 3
-            bullets_cnt = 17
-        for i in range(1, 3):
-            monster = Enemy(img_enemy, random.randint(80, width - 80), -40, 80, 50,
-                            random.randint(min_speed, max_speed), hp)
-            monsters.add(monster)
-        while run:
-            screen.fill("black")
-            draw(screen)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    terminate()
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE:
-                        if bullets_cnt > 0:
-                            ship.fire()
-                            bullets_cnt -= 1
+            min_speed, goal_score, max_speed, limit, hp, bullets_cnt = map(int, read_json("levels.json")[
+                f"level_{level}"].values())
 
-            if not finish:
+            for i in range(1, 3):
+                monster = Enemy(img_enemy, random.randint(80, width - 80), -40, 80, 50,
+                                random.randint(min_speed, max_speed), hp)
+                monsters.add(monster)
+
+            while run:
+                screen.fill("black")
+                draw(screen)
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        terminate()
+                    elif event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_SPACE:
+                            if bullets_cnt > 0:
+                                ship.fire()
+                                bullets_cnt -= 1
                 text = font2.render("Счет: " + str(score), True, (255, 255, 255))
                 screen.blit(text, (10, 20))
 
@@ -319,29 +299,53 @@ if __name__ == '__main__':
                         monsters.add(monster)
                 if pygame.sprite.spritecollide(ship, monsters, False) or lost >= limit:
                     run = False
-
+                    finish_lose = True
+                if goal_score == score:
+                    run = False
+                    finish_win = True
                 ship.reset()
                 ship.update()
                 clock.tick(FPS)
                 pygame.display.flip()
-        finish = True
-        screen.blit(lose, (100, 200))
-        while finish:
-            draw(screen)
-            screen.blit(lose, (80, 200))
-            create_button(screen, 'Выйти в главное меню', 80, 550)
-            create_button(screen, "Попробовать заново", 450, 550)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    terminate()
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    x_pos, y_pos = event.pos
-                    if x_pos in range(71, 360) and y_pos in range(540, 579):
-                        print("В разработке")
 
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    x_pos, y_pos = event.pos
-                    if x_pos in range(442, 709) and y_pos in range(542, 581):
-                        print("В разработке")
+            screen.blit(lose, (100, 200))
+            while finish_lose:
+                draw(screen)
+                screen.blit(lose, (80, 200))
+                create_button(screen, 'Выйти в главное меню', 80, 550)
+                create_button(screen, "Попробовать заново", 450, 550)
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        terminate()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        x_pos, y_pos = event.pos
+                        if x_pos in range(71, 360) and y_pos in range(540, 579):
+                            finish_lose = False
+                            game_running = False
 
-            pygame.display.flip()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        x_pos, y_pos = event.pos
+                        if x_pos in range(442, 709) and y_pos in range(542, 581):
+                            finish_lose = False
+                            game_running = True
+                pygame.display.flip()
+            while finish_win:
+                draw(screen)
+                screen.blit(win, (80, 200))
+                create_button(screen, 'Выйти в главное меню', 80, 550)
+                create_button(screen, "Попробовать заново", 450, 550)
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        terminate()
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        x_pos, y_pos = event.pos
+                        if x_pos in range(71, 360) and y_pos in range(540, 579):
+                            finish_win = False
+                            game_running = False
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        x_pos, y_pos = event.pos
+                        if x_pos in range(442, 709) and y_pos in range(542, 581):
+                            finish_win = False
+                            game_running = True
+
+                pygame.display.flip()

@@ -1,0 +1,42 @@
+{
+  "level_1": {
+    "min_speed": 1,
+    "goal_score": 1,
+    "max_speed": 2,
+    "limit": 2,
+    "hp": 1,
+    "bullets_cnt": 10
+  },
+  "level_2": {
+    "min_speed": 3,
+    "goal_score": 4,
+    "max_speed": 7,
+    "limit": 3,
+    "hp": 1,
+    "bullets_cnt": 12
+  },
+  "level_3": {
+    "min_speed": 4,
+    "goal_score": 5,
+    "max_speed": 6,
+    "limit": 3,
+    "hp": 1,
+    "bullets_cnt": 12
+  },
+  "level_4": {
+    "min_speed": 1,
+    "goal_score": 3,
+    "max_speed": 8,
+    "limit": 3,
+    "hp": 2,
+    "bullets_cnt": 15
+  },
+  "level_5": {
+    "min_speed": 3,
+    "goal_score": 4,
+    "max_speed": 10,
+    "limit": 3,
+    "hp": 2,
+    "bullets_cnt": 17
+  }
+}
