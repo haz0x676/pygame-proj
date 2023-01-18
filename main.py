@@ -11,6 +11,7 @@ finish_win = False
 
 FPS = 45
 lost = 0
+
 font2 = pygame.font.SysFont('Arial', 36)
 lose = font1.render('ВЫ ПРОИГРАЛИ!', True, (180, 0, 0))
 win = font1.render('ВЫ ВЫИГРАЛИ', True, (0, 255, 0))
@@ -283,6 +284,10 @@ if __name__ == '__main__':
                 text_bullets = font2.render("Количество пуль: " + str(bullets_cnt), True, (255, 255, 255))
                 screen.blit(text_bullets, (10, 80))
 
+                text_score_to_win = font2.render("Требуется сбить для победы: " + str(goal_score), True,
+                                                 (255, 255, 255))
+                screen.blit(text_score_to_win, (10, 110))
+
                 bullets.draw(screen)
                 bullets.update()
                 monsters.draw(screen)
@@ -310,6 +315,7 @@ if __name__ == '__main__':
 
             screen.blit(lose, (100, 200))
             while finish_lose:
+                lost = 0
                 draw(screen)
                 screen.blit(lose, (80, 200))
                 create_button(screen, 'Выйти в главное меню', 80, 550)
@@ -330,6 +336,7 @@ if __name__ == '__main__':
                             game_running = True
                 pygame.display.flip()
             while finish_win:
+                lost = 0
                 draw(screen)
                 screen.blit(win, (80, 200))
                 create_button(screen, 'Выйти в главное меню', 80, 550)

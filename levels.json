@@ -1,7 +1,7 @@
 {
   "level_1": {
     "min_speed": 1,
-    "goal_score": 1,
+    "goal_score": 4,
     "max_speed": 2,
     "limit": 2,
     "hp": 1,
